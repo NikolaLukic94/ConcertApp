@@ -9,6 +9,8 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ConcertTest extends TestCase
 {
+    use DatabaseMigrations;
+
     /** @test */
     public function canGetFormattedDate() 
     {
@@ -45,4 +47,18 @@ class ConcertTest extends TestCase
 
         $this->assertEquals('67.50', $concert->ticket_price_in_dollars);
     }     
+
+    /** @test */
+    public function concertsWithAPublishedAtDateArePublished() 
+    {
+        $publishedConcertA = factory(Concert::class)->create(['published_at' => Carbon::parse('-1 week')]);
+        $publishedConcertB = factory(Concert::class)->create(['published_at' => Carbon::parse('-1 week')]);
+        $unpublishedConcert = factory(Concert::class)->create(['published_at' => null]);
+
+        $publishedConcerts = Concert::published()->get();
+
+        $this->assertTrue($publishedConcerts->contains($publishedConcertA));
+        $this->assertTrue($publishedConcerts->contains($publishedConcertB));
+        $this->assertFalse($publishedConcerts->contains($unpublishedConcert));
+    }      
 }

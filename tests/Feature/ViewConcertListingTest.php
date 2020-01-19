@@ -14,7 +14,7 @@ class ViewConcertListingTest extends TestCase
     use DatabaseMigrations;
 
     /** @test */
-    public function useCanViewConcertListing()
+    public function useCanViewAPublishedConcertListing()
     {
         //arrange
             //create a concert
@@ -29,7 +29,8 @@ class ViewConcertListingTest extends TestCase
             'city' => 'Laraville',
             'state' => 'ON',
             'zip' => '13223',
-            'additional_information' => 'For tickets, call 555-888-3333'
+            'additional_information' => 'For tickets, call 555-888-3333',
+            'published_at' => Carbon::parse('-1 week')
         ]);
 
         //act
@@ -48,4 +49,16 @@ class ViewConcertListingTest extends TestCase
         $this->see('13223');
         $this->see('For tickets, call 555-888-3333');
     }
+
+    /** @test */
+    public function userCannotViewUnpublishedConcertListings()
+    {
+        $concert = factory(Concert::class)->create([
+            'published_at' => null,
+        ]);
+
+        $this->get('/concerts/' . $concert->id);
+
+        $this->assertResponseStatus(404);
+    }    
 }
