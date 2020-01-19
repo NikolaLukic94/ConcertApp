@@ -5,10 +5,14 @@ namespace Tests\Feature;
 use App\Concert;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class ViewConcertListingTest extends TestCase
 {
+    use DatabaseMigrations;
+
     /** @test */
     public function useCanViewConcertListing()
     {
