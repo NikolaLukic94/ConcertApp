@@ -2,6 +2,7 @@
 
 namespace App;
 
+
 use Illuminate\Database\Eloquent\Model;
 
 class Concert extends Model
@@ -35,14 +36,38 @@ class Concert extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
     public function orderTickets($email, $ticketQuantity)
     {
+        $tickets = $this->tickets()->whereNull('order_id')->take($ticketQuantity)->get();
+
+        if ($tickets->count() < $ticketQuantity) {
+            throw new NotEnoughtTicketsException;
+        }
+
         $concert->orders()->create(['email' => $email]);
 
-        foreach(range(1, $ticketQuantity) as $i) {
-            $order->tickets()->create([]);
+        foreach($tickets as $ticket) {
+            $order->tickets()->create([$ticket]);
         }
 
         return $order;
     }
+
+    public function addTickets($quantity)
+    {
+        foreach(range(1, $ticketQuantity) as $i) {
+            $order->tickets()->create([]);
+        } 
+    }
+
+    public function ticketsRemaining()
+    {
+        return $this->tickets()->whereNull('order_id')->count();
+    }
+
 }
