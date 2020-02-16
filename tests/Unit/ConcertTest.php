@@ -109,23 +109,39 @@ class ConcertTest extends TestCase
         $this->fail("Order succeeded even though there were not enough tickets remaining.");
     }        
     
-        /** @test */
-        public function cannotOrderTicketsThatHaveAlreadyBeenPurchased() 
-        {
-            $concert = factory(Concert::class)->create();
-            $concert->addTickets(10);
-            $concert->orderTickets('john@example.com', 8);
+    /** @test */
+    public function cannotOrderTicketsThatHaveAlreadyBeenPurchased() 
+    {
+        $concert = factory(Concert::class)->create();
+        $concert->addTickets(10);
+        $concert->orderTickets('john@example.com', 8);
 
-            try {
-                $concert->orderTickets('john@example.com', 3);
-            } catch (NotEnoughTicketsException $e) {
-                $johnsOrder = $concert->orders()->where('email', 'john@example.com')->first();
-                $this->assertNull($johnsOrder);
-                $this->assertEquals(2, $concert->ticketsRemaining());
-                return;
-            }     
-            
-            $this->fail("Order succeeded even though there were not enough tickets remaining.");
+        try {
+            $concert->orderTickets('john@example.com', 3);
+        } catch (NotEnoughTicketsException $e) {
+            $johnsOrder = $concert->orders()->where('email', 'john@example.com')->first();
+            $this->assertNull($johnsOrder);
+            $this->assertEquals(2, $concert->ticketsRemaining());
+            return;
+        }     
+        
+        $this->fail("Order succeeded even though there were not enough tickets remaining.");
 
-        }  
+    }  
+
+    /** @test */
+    public function cannotReserveTicketsThatHaveAlreadyBeenPurchased()
+    {
+        $concert = factory(Concert::class)->create()->addTickets(3);
+        $concert->reserveTickets(2);
+
+        try {
+            $concert->reserveTickets(2);
+        }   catch (NotEnoughTicketsException $e) {
+            $this->assertEquals(1, $concert->ticketsRemaining());
+            return;
+        }
+
+        $this->fail("Reserving tickets succeeded even though the tickets were already reserved");
+    }
 }

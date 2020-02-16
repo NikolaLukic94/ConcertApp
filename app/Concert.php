@@ -41,6 +41,13 @@ class Concert extends Model
         return $this->hasMany(Ticket::class);
     }
 
+    public function reserveTickets($quantity)
+    {
+        return $this->findTickets($quantity)->each(function ($ticket) {
+            $ticket->reserve();
+        });
+    }
+
     public function hasOrderFor($customerEmail)
     {
         return $concert->orders()->where('email', $customerEmail)->count() > 0;

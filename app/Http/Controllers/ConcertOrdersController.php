@@ -27,13 +27,17 @@ class ConcertOrdersController extends Controller
         ]);
 
         try {
-            $order = $concert->orderTickets(request('email'), request('ticket_quantity'));
 
-            $this->paymentGateway->charge(request('ticket_quantity') * $concert->ticket_price, request('payment_token'));
+            $tickets = $concert->reserveTickets(request('ticket_quantity'));
+            $reservation = new Reservation($tickets);
+
+            $this->paymentGateway->charge($reservation->totalCost(), $request('payment_token'));
+
+            $order = Order::forTickets($tickets, $request('email'), $reservation->totalCost());
     
             return response()->json($order, 201);    
         } catch (PaymentFailedException $e) {
-            $order->cancel();
+            $reservation->cancel();
             return response()->json([], 422);
         } catch (NotEnoughTicketsException $e) {
             return response()->json([], 422);
