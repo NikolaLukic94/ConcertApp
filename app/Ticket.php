@@ -13,13 +13,13 @@ class Ticket extends Model
         return $query->whereNull('order_id')->whereNull('reserved_at');
     }
 
+    public function release()
+    {
+        $this->update(['reserved_at', null]);
+    }
+
     public function reserve()
     {
         $this->update(['reserved_at' => Carbon::now()]);
-    }
-
-    public function release()
-    {
-        $this->update(['order_id', null]);
     }
 }

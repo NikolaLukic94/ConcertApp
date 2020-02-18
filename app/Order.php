@@ -23,14 +23,14 @@ class Order extends Model
         return $this->tickets()->count();
     }
 
-    public function cancel()
-    {
-        foreach ($this->tickets as $ticket) {
-            $ticket->release();
-        }
+    // public function cancel()
+    // {
+    //     foreach ($this->tickets as $ticket) {
+    //         $ticket->release();
+    //     }
         
-        $this->delete();
-    }
+    //     $this->delete();
+    // }
 
     public function toArray()
     {
@@ -40,4 +40,31 @@ class Order extends Model
             'amount' => $this->ticketQuantity() * $this->concert->ticket_price,
         ]
     }
+
+    public static function forTickets($tickets, $email, $amount)
+    {
+        $order = self::create([
+            'email' => $email,
+            'amount' => $amount
+        ]);
+
+        foreach ($tickets as $ticket) {
+            $order->tickets()->save($ticket);
+        }
+
+        return $order;
+    } 
+
+    public static function fromReservation($reservation)
+    {
+        $order = self::create([
+            'email' => $reservation->email,
+            'amount' => $reservation->totalCost()
+        ]);
+
+        $order->tickets()->saveMany($reservation->tickets());
+
+        return $order;
+    }
 }
+
